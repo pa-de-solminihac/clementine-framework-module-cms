@@ -1,0 +1,15 @@
+- créer une page depuis le BO
+- gestion de la page 404
+- création de templates depuis le BO
+- affecter une page a un menu
+- faire du ménage dans la gestion des clés étrangères... ON DELETE CASCADE ? Toutes les supprimer ?
+- restreindre les types de contenus autorisés par zone en fonction du template choisi : le template actus prend des contenu_introck, le template accueil prend des contenu_ckeditor par exemple
+- permettre de choisir le template par zone (voire par contenu) ? => - choix du block appelé pour l'affichage d'un même contenu afin qu'il puisse être différent selon la zone dans laquelle il s'affiche (on affichera le titre avec <h2> dans l'edito, avec <span> dans le menu)
+- reorganisation des contenus en drag & drop : pouvoir changer un contenu de zone
+- disposition du back office qui ressemble au template selectionne
+- workflow
+- versionning
+- rendre facilement administrable la reutilisation d'un contenu ailleurs ?
+- voir si on peut ameliorer les performances dans l'affichage des contenus (fonction unescape_content), utilisation d'InnoDB sans clés étrangères au lieu de MyIsam
+
+- BUG : impossible de sauver un contenu sans titre, ou de supprimer le titre d'un contenu... et pas de message d'erreur quand on essaye de le faire !

@@ -1,0 +1,57 @@
+/* CMS */
+.pages_index > ul > li {
+    margin: 1em;
+}
+.pages_index > ul > li > a {
+    padding: 0 1em;
+}
+
+.zones_list,
+.zones_list_disabled {
+    word-wrap: break-word;
+}
+
+.notrad,
+.nopublish {
+    color: red;
+}
+.zones_list > .notradbg {
+    background: rgba(0,0,0,0.1);
+}
+
+.zone_inactive {
+    font-size: 0.8em;
+    color: #F00;
+}
+
+.contenus_list_head {
+    margin: 1em;
+    padding: 0.5em;
+}
+
+.zones_list_head a,
+.contenus_list_head a,
+.contenus_list_nom a,
+.contenus_list_content a {
+    padding: 0 1em; 
+}
+
+.contenus_list_nom a {
+    font-weight: bold;
+}
+
+.contenus_list_content a {
+    display: block;
+}
+
+.contenus_index_list img.cms_handle {
+    cursor: move;
+}
+
+.cms_sortable_placeholder {
+    outline: dotted #888 1px;
+}
+.textbox_keys,
+.textbox_vals {
+    width: 172px;
+}
