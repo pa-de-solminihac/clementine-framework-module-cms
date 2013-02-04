@@ -403,9 +403,6 @@ class cmsCmsModel extends cmsCmsModel_Parent
         $id_page        = (int) $id_page;
         $template_page  = $ns->ifPost("int", "template_page"); 
         $slug_page      = $ns->urlize($ns->ifPost("string", "slug_page")); 
-        if (empty($slug_page)) {
-            $slug_page      = $ns->urlize($nom_page); 
-        }
         // verifie que le slug n'existe pas deja...
         $sql = 'SELECT slug 
                   FROM ' . $this->table_cms_page . ' 
@@ -460,21 +457,18 @@ class cmsCmsModel extends cmsCmsModel_Parent
         $ns = $this->getModel('fonctions');
         $id_page        = (int) $id_page;
         if ($id_page) {
-            // TODO (en attendant on masque juste la page)
             // recupere le template de la page, son template, ses zones, ses contenus (avec les parametres pour chacun) 
             // et efface ces donnees si elles ne sont utilisees nulle part ailleurs
             //
             // supprime les instances de zones de cette page et leurs parametres
             // supprime les contenus de cette page et leurs parametres si pas utilises ailleurs
             // supprime cette page et ses parametres
-            // recupere le slug de cette page
-            $db = $this->getModel('db');
-            $sql  = "UPDATE " . $this->table_cms_page . " 
-                        SET `active`   = '0',
-                            `nom_page` = CONCAT('//', `id_page`, '/', `nom_page`),
-                            `slug`     = CONCAT('//', `id_page`, '/', `slug`)
-                      WHERE `id_page`  =  '$id_page' LIMIT 1 "; 
-            $stmt = $db->query($sql); 
+            $zones = $this->getPageZones($id_page, 1);
+            foreach ($zones as $zone) {
+                $contenus = $this->getPageZoneContentsInfos($zone[0]['id_zone'], $id_page, 1);
+                print_r($contenus);
+            }
+            die();
         }
         return $id_page; 
     }

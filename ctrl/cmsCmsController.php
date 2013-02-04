@@ -93,8 +93,6 @@ class cmsCmsController extends cmsCmsController_Parent
             $cssjs->register_css('jquery.dataTables',  array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/js/jquery.dataTables/dataTables.css'));
             $cssjs->register_js('jquery.dataTables', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/js/jquery.dataTables/jquery.dataTables.min.js'));
             $cssjs->register_foot('clementine_jstools-datatables', $this->getBlockHtml('jstools/js_datatables', $this->data));
-            $script = $this->getBlockHtml('cms/index_js', $this->data);
-            $this->getModel('cssjs')->register_foot('clementine_cms_index_js', $script);
         } else {
             $this->getModel('fonctions')->redirect(__WWW__);
         }
@@ -230,10 +228,15 @@ class cmsCmsController extends cmsCmsController_Parent
     {
         if ($this->getModel('users')->needPrivilege('manage_pages')) {
             $ns = $this->getModel('fonctions');
-            $id_page        = $ns->ifGet("int", "id"); 
             $cms = $this->getModel('cms');
-            $cms->delPage($id_page);
-            $ns->redirect(__WWW__ . '/cms');
+            if ($_GET) {
+                // recupere les parametres 
+                $id_page        = $ns->ifGet("int", "id_page"); 
+                $cms = $this->getModel('cms');
+                $cms->delPage($id_page);
+                echo "toto";
+                die();
+            }
         } else {
             $this->getModel('fonctions')->redirect(__WWW__);
         }
