@@ -20,7 +20,7 @@ class cmsCmsController extends cmsCmsController_Parent
     function viewpageAction($request, $params = null) 
     {
         // exemple : charge les CSS et JS necessaires dans le block head
-        // $this->getModel('cssjs')->register_js('jquery', array('src' => 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'));
+        // $this->getModel('cssjs')->register_js('jquery', array('src' => 'https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js'));
         $ns = $this->getModel('fonctions');
         if (isset($params['id_page'])) {
             $id_page = $params['id_page'];
@@ -74,7 +74,7 @@ class cmsCmsController extends cmsCmsController_Parent
     {
         if ($this->getModel('users')->needPrivilege('manage_pages')) {
             if (Clementine::$config['module_jstools']['use_google_cdn']) {
-                $this->getModel('cssjs')->register_js('jquery', array('src' => 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'));
+                $this->getModel('cssjs')->register_js('jquery', array('src' => 'https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js'));
             } else {
                 $this->getModel('cssjs')->register_js('jquery', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/jquery/jquery.min.js'));
             }
@@ -85,7 +85,7 @@ class cmsCmsController extends cmsCmsController_Parent
             $cssjs = $this->getModel('cssjs');
             // jQuery
             if (Clementine::$config['module_jstools']['use_google_cdn']) {
-                $cssjs->register_js('jquery', array('src' => 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'));
+                $cssjs->register_js('jquery', array('src' => 'https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js'));
             } else {
                 $cssjs->register_js('jquery', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/jquery/jquery.min.js'));
             }
@@ -93,8 +93,6 @@ class cmsCmsController extends cmsCmsController_Parent
             $cssjs->register_css('jquery.dataTables',  array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/js/jquery.dataTables/dataTables.css'));
             $cssjs->register_js('jquery.dataTables', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/js/jquery.dataTables/jquery.dataTables.min.js'));
             $cssjs->register_foot('clementine_jstools-datatables', $this->getBlockHtml('jstools/js_datatables', $this->data));
-            $script = $this->getBlockHtml('cms/index_js', $this->data);
-            $this->getModel('cssjs')->register_foot('clementine_cms_index_js', $script);
         } else {
             $this->getModel('fonctions')->redirect(__WWW__);
         }
@@ -110,11 +108,11 @@ class cmsCmsController extends cmsCmsController_Parent
     {
         if ($this->getModel('users')->needPrivilege('manage_pages')) {
             if (Clementine::$config['module_jstools']['use_google_cdn']) {
-                $this->getModel('cssjs')->register_js('jquery', array('src' => 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'));
-                $this->getModel('cssjs')->register_js('jquery.ui', array('src' => 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.22/jquery-ui.min.js'));
+                $this->getModel('cssjs')->register_js('jquery', array('src' => 'https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js'));
+                $this->getModel('cssjs')->register_js('jquery.ui', array('src' => 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js'));
             } else {
                 $this->getModel('cssjs')->register_js('jquery', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/jquery/jquery.min.js'));
-                $this->getModel('cssjs')->register_js('jquery.ui', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/jquery-ui/js/jquery-ui.custom.min.js'));
+                $this->getModel('cssjs')->register_js('jquery.ui', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/jquery-ui/js/jquery-ui-1.8.16.custom.min.js'));
             }
             $this->getModel('cssjs')->register_css('jquery.colorbox', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/colorbox/colorbox.css', 'media' => 'screen'));
             $this->getModel('cssjs')->register_js('jquery.colorbox', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/colorbox/jquery.colorbox-min.js'));
@@ -230,10 +228,15 @@ class cmsCmsController extends cmsCmsController_Parent
     {
         if ($this->getModel('users')->needPrivilege('manage_pages')) {
             $ns = $this->getModel('fonctions');
-            $id_page        = $ns->ifGet("int", "id"); 
             $cms = $this->getModel('cms');
-            $cms->delPage($id_page);
-            $ns->redirect(__WWW__ . '/cms');
+            if ($_GET) {
+                // recupere les parametres 
+                $id_page        = $ns->ifGet("int", "id_page"); 
+                $cms = $this->getModel('cms');
+                $cms->delPage($id_page);
+                echo "toto";
+                die();
+            }
         } else {
             $this->getModel('fonctions')->redirect(__WWW__);
         }
@@ -311,7 +314,7 @@ class cmsCmsController extends cmsCmsController_Parent
             $script = $this->getBlockHtml('cms/jquery_textbox_replace', $this->data);
             // charge les js et css necessaires
             if (Clementine::$config['module_jstools']['use_google_cdn']) {
-                $this->getModel('cssjs')->register_js('jquery', array('src' => 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'));
+                $this->getModel('cssjs')->register_js('jquery', array('src' => 'https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js'));
             } else {
                 $this->getModel('cssjs')->register_js('jquery', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/jquery/jquery.min.js'));
             }
@@ -419,7 +422,7 @@ class cmsCmsController extends cmsCmsController_Parent
             $script = $this->getBlockHtml('cms/jquery_textbox_replace', $this->data);
             // charge les js et css necessaires
             if (Clementine::$config['module_jstools']['use_google_cdn']) {
-                $this->getModel('cssjs')->register_js('jquery', array('src' => 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'));
+                $this->getModel('cssjs')->register_js('jquery', array('src' => 'https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js'));
             } else {
                 $this->getModel('cssjs')->register_js('jquery', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/jquery/jquery.min.js'));
             }
@@ -537,7 +540,7 @@ class cmsCmsController extends cmsCmsController_Parent
             $script = $this->getBlockHtml('cms/jquery_textbox_replace', $this->data);
             // charge les js et css necessaires
             if (Clementine::$config['module_jstools']['use_google_cdn']) {
-                $this->getModel('cssjs')->register_js('jquery', array('src' => 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'));
+                $this->getModel('cssjs')->register_js('jquery', array('src' => 'https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js'));
             } else {
                 $this->getModel('cssjs')->register_js('jquery', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/jquery/jquery.min.js'));
             }
