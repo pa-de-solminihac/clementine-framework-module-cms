@@ -11,14 +11,14 @@
 class cmsHookHelper extends cmsHookHelper_Parent
 {
     /**
-     * before_request : fonction appelee avant de remplir l'objet $request
+     * before_first_getRequest : fonction appelee avant le premier appel a getRequest()
      * 
      * @access public
      * @return void
      */
-    function before_request($request)
+    function before_first_getRequest()
     {
-        parent::before_request($request);
+        parent::before_first_getRequest();
 
         $db = $this->getModel('db');
         // recupere la partie specifique de l'URL demandee
@@ -47,9 +47,9 @@ class cmsHookHelper extends cmsHookHelper_Parent
                     $stmt = $db->query($sql);
                     if ($result = $db->fetch_assoc($stmt)) {
                         $url_seo = $result['slug'];
-                        // on transmet aussi les parametres Clementine::$register['request']->GET sauf l'id de la page
+                        // on transmet aussi les parametres Clementine::$register['request']['GET'] sauf l'id de la page
                         $i = 0;
-                        foreach (Clementine::$register['request']->GET as $key => $val) {
+                        foreach (Clementine::$register['request']['GET'] as $key => $val) {
                             if ($key != 'id') {
                                 $url_seo .= ($i ? '?' : '&') . $key . '=' . $val;
                             }
@@ -82,22 +82,22 @@ class cmsHookHelper extends cmsHookHelper_Parent
                     $url_reelle = $prefixe_langue . 'cms/viewpage?id=' . $id_page;
                     $query_string = substr($url_reelle, (strpos($url_reelle, '?') + 1));
                     $params = explode('&', $query_string);
-                    // on transmet aussi les parametres Clementine::$register['request']->GET sauf l'id de la page
-                    foreach (Clementine::$register['request']->GET as $key => $val) {
+                    // on transmet aussi les parametres Clementine::$register['request']['GET'] sauf l'id de la page
+                    foreach (Clementine::$register['request']['GET'] as $key => $val) {
                         if ($key != 'id') {
                             $params[] = $key . '=' . $val;
                         }
                     }
-                    Clementine::$register['request']->GET = array();
+                    Clementine::$register['request']['GET'] = array();
                     foreach ($params as $param) {
                         list($key, $val) = explode('=', $param, 2);
-                        Clementine::$register['request']->GET[$key] = $val; /* cas particulier d'utilisation de Clementine::$register['request']->GET */
+                        Clementine::$register['request']['GET'][$key] = $val; /* cas particulier d'utilisation de Clementine::$register['request']['GET'] */
                     }
                     if (__DEBUGABLE__ && Clementine::$config['clementine_debug']['hook']) {
-                        if (!isset(Clementine::$clementine_debug['hook']['before_request'])) {
-                            Clementine::$clementine_debug['hook']['before_request'] = array();
+                        if (!isset(Clementine::$clementine_debug['hook']['before_first_getRequest'])) {
+                            Clementine::$clementine_debug['hook']['before_first_getRequest'] = array();
                         }
-                        Clementine::$clementine_debug['hook']['before_request'][] = '<strong>$this->hook(\'before_request\')</strong><br />URL réelle : <a href="' . __BASE_URL__ . '/' . $url_reelle . '">' . __BASE_URL__ . '/' . $url_reelle . '</a>';
+                        Clementine::$clementine_debug['hook']['before_first_getRequest'][] = '<strong>$this->hook(\'before_first_getRequest\')</strong><br />URL réelle : <a href="' . __BASE_URL__ . '/' . $url_reelle . '">' . __BASE_URL__ . '/' . $url_reelle . '</a>';
                     }
                     Clementine::$register['request_uri'] = $url_reelle;
                 }

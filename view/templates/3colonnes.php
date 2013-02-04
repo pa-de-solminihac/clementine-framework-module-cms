@@ -1,21 +1,24 @@
-<?php 
-$this->getBlock('design/header', $data);
-?>
-<div class="zone_edito <?php echo implode(' ', $this->getZoneParamValues('edito', 'class')); ?>">
 <?php
-$this->getBlock('cms/zone', 'edito');
+    if (Clementine::$config['module_jstools']['use_google_cdn']) {
+        $this->getModel('cssjs')->register_js('jquery', array('src' => 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'));
+    } else {
+        $this->getModel('cssjs')->register_js('jquery', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/jquery/jquery.min.js'));
+    }
+    $this->getBlock('design/header', $data);
 ?>
+
+<div id="col1" class="<?php echo implode(' ', $this->getZoneParamValues('edito', 'css')); ?>">
+    <?php $this->getBlock('cms/zone', 'edito'); ?>
 </div>
-<div class="zone_texte_principal <?php echo implode(' ', $this->getZoneParamValues('texte_principal', 'class')); ?>">
-<?php
-$this->getBlock('cms/zone', 'texte_principal');
-?>
+
+<div id="col2" class="<?php echo implode(' ', $this->getZoneParamValues('texte_principal', 'css')); ?>">
+    <?php $this->getBlock('cms/zone', 'texte_principal'); ?>
 </div>
-<div class="zone_colonne_droite <?php echo implode(' ', $this->getZoneParamValues('colonne_droite', 'class')); ?>">
-<?php
-$this->getBlock('cms/zone', 'colonne_droite');
-?>
+
+<div id="col3" class="<?php echo implode(' ', $this->getZoneParamValues('colonne_droite', 'css')); ?>">
+    <?php $this->getBlock('cms/zone', 'colonne_droite'); ?>
 </div>
+
 <?php
-$this->getBlock('design/footer', $data);
+    $this->getBlock('design/footer', $data);
 ?>
