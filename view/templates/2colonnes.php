@@ -1,16 +1,27 @@
 <?php 
-$this->getBlock('design/header', $data);
-?>
-<div class="zone_edito <?php echo implode(' ', $this->getZoneParamValues('edito', 'class')); ?>">
+    $data['active'] = $this->data['params']['body_id'];
+    $this->getBlock('design/header', $data);
+?>         
+                    <div id="menu_bulle">
+                        <?php $this->getBlock('design/menubulle', $data); ?>
+                    </div>
+                    <div id="contenu">
+                        <div class="left">
 <?php
-$this->getBlock('cms/zone', 'edito');
-?>
-</div>
-<div class="zone_texte_principal <?php echo implode(' ', $this->getZoneParamValues('texte_principal', 'class')); ?>">
+    $this->getBlock('cms/zone', 'colonne_gauche');  
+?>      
+                        </div>
+                        
+                        <div class="right">
 <?php
-$this->getBlock('cms/zone', 'texte_principal');
+    $this->getBlock('cms/zone', 'colonne_droite');
 ?>
-</div>
-<?php
-$this->getBlock('design/footer', $data);
+                        </div>
+                        
+                    </div>
+                </div>
+                <div class="spacer"></div>
+            
+<?php 
+    $this->getBlock('design/footer', $data);
 ?>
