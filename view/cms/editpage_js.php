@@ -12,9 +12,9 @@ jQuery('.contenus_index_list tbody').sortable({
     update: function () {
         order = jQuery(this).sortable('toArray');
         neworder = Array();
-        lngth = 'cms_contenu_id_'.length;
         for (var i in order) {
-            id = order[i].substring(lngth);
+            length = 'cms_contenu_id_'.length;
+            id = order[i].substring(length);
             neworder.push(id);
         }
         jQuery(this).parent().find('.cms_content_order').val(neworder);

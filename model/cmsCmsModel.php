@@ -130,10 +130,7 @@ class cmsCmsModel extends cmsCmsModel_Parent
                      INNER JOIN `" . $this->table_categories . "` cat ON `categories_id_categorie` = cat.`id` 
                      WHERE categories_id_categorie = '$id_category' 
                        AND cat.active = 1 ";
-        } else {
-            $sql .= " WHERE 1 ";
         }
-        $sql .= " AND `$this->table_cms_page`.`active` = 1 ";
         if ($order_by) {
             $sql .= 'ORDER BY ' . $db->escape_string($order_by);
         }
@@ -165,7 +162,7 @@ class cmsCmsModel extends cmsCmsModel_Parent
     {
         $id_page = (int) $id_page; 
         $db = $this->getModel('db');
-        $sql = "SELECT * FROM `$this->table_cms_page` WHERE id_page = '$id_page' AND active = 1";
+        $sql = "SELECT * FROM `$this->table_cms_page` WHERE id_page = '$id_page'";
         $stmt = $db->query($sql);
         $page = array();
         for (true; $res = $db->fetch_assoc($stmt); true) {
@@ -356,7 +353,7 @@ class cmsCmsModel extends cmsCmsModel_Parent
             $sql = "SELECT * 
                       FROM `" . $info_contenu['table_contenu'] . "`
                      WHERE id = '" . (int) $info_contenu['id_contenu'] . "' 
-                       AND lang = '" . $db->escape_string($request->LANG) . "' 
+                       AND lang = '" . $request['LANG'] . "' 
                      LIMIT 1 ";
             $stmt = $db->query($sql); 
             $contenu = $db->fetch_assoc($stmt);
@@ -375,7 +372,7 @@ class cmsCmsModel extends cmsCmsModel_Parent
                                    $info_contenu['table_contenu'])); 
             // recupere (seulement en BO pour l'instant) l'info : le contenu est il traduit dans chaque langue ?
             $traductions = array();
-            $lang_dispo = array_keys($request->EQUIV);
+            $lang_dispo = array_keys($request['EQUIV']);
             if ($even_unpublished && (count($lang_dispo) > 1)) {
                 foreach ($lang_dispo as $lng) {
                     $sql = "SELECT COUNT(*) cnt
@@ -397,15 +394,13 @@ class cmsCmsModel extends cmsCmsModel_Parent
     public function modPage ($id_page, $nom_page, $template_page, $slug_page)
     {
         // modification 
+        $request = $this->getRequest();
         $ns = $this->getModel('fonctions');
         $db = $this->getModel('db');
         // traitement des donnees
         $id_page        = (int) $id_page;
         $template_page  = $ns->ifPost("int", "template_page"); 
         $slug_page      = $ns->urlize($ns->ifPost("string", "slug_page")); 
-        if (empty($slug_page)) {
-            $slug_page      = $ns->urlize($nom_page); 
-        }
         // verifie que le slug n'existe pas deja...
         $sql = 'SELECT slug 
                   FROM ' . $this->table_cms_page . ' 
@@ -460,21 +455,18 @@ class cmsCmsModel extends cmsCmsModel_Parent
         $ns = $this->getModel('fonctions');
         $id_page        = (int) $id_page;
         if ($id_page) {
-            // TODO (en attendant on masque juste la page)
             // recupere le template de la page, son template, ses zones, ses contenus (avec les parametres pour chacun) 
             // et efface ces donnees si elles ne sont utilisees nulle part ailleurs
             //
             // supprime les instances de zones de cette page et leurs parametres
             // supprime les contenus de cette page et leurs parametres si pas utilises ailleurs
             // supprime cette page et ses parametres
-            // recupere le slug de cette page
-            $db = $this->getModel('db');
-            $sql  = "UPDATE " . $this->table_cms_page . " 
-                        SET `active`   = '0',
-                            `nom_page` = CONCAT('//', `id_page`, '/', `nom_page`),
-                            `slug`     = CONCAT('//', `id_page`, '/', `slug`)
-                      WHERE `id_page`  =  '$id_page' LIMIT 1 "; 
-            $stmt = $db->query($sql); 
+            $zones = $this->getPageZones($id_page, 1);
+            foreach ($zones as $zone) {
+                $contenus = $this->getPageZoneContentsInfos($zone[0]['id_zone'], $id_page, 1);
+                print_r($contenus);
+            }
+            die();
         }
         return $id_page; 
     }
@@ -582,16 +574,18 @@ class cmsCmsModel extends cmsCmsModel_Parent
         $id_page = (int) $id_page;
         // met a jour les parametres : supprime et recree
         $db = $this->getModel('db');
-        $sql  = "DELETE FROM `" . $this->table_cms_parametres_page . "` WHERE `page_id_page` = '" . $id_page . "' ";
-        if (!$db->query($sql)) {
-            return false;
-        }
-        foreach ($donnees as $param_name => $param_val) {
-            $sql  = "INSERT INTO `" . $this->table_cms_parametres_page . "` (page_id_page, nom, valeur) 
-                            VALUES ('" . $id_page . "', '" . $db->escape_string($param_name) . "', '" . $db->escape_string($param_val) . "') 
-                                ON DUPLICATE KEY UPDATE valeur = '" . $db->escape_string($param_val) . "' ";
+        if ($donnees) {
+            $sql  = "DELETE FROM `" . $this->table_cms_parametres_page . "` WHERE `page_id_page` = '" . $id_page . "' ";
             if (!$db->query($sql)) {
                 return false;
+            }
+            foreach ($donnees as $param_name => $param_val) {
+                $sql  = "INSERT INTO `" . $this->table_cms_parametres_page . "` (page_id_page, nom, valeur) 
+                              VALUES ('" . $id_page . "', '" . $db->escape_string($param_name) . "', '" . $db->escape_string($param_val) . "') 
+                                  ON DUPLICATE KEY UPDATE valeur = '" . $db->escape_string($param_val) . "' ";
+                if (!$db->query($sql)) {
+                    return false;
+                }
             }
         }
         return true;
