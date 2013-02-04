@@ -1,4 +1,5 @@
 <?php
+$request = $this->getRequest();
 $ns = $this->getModel('fonctions');
 if (isset($data['page']) && $data['page']) {
     $page = $data['page']; 
@@ -16,13 +17,12 @@ if (isset($data['page']) && $data['page']) {
                 <div class="content-box">
 
                     <div class="content-box-header">
-                        <h3 class="zone_nom">Zone <?php echo $nom_zone; ?>
+                        <h3 class="zone_nom">Zone <?php echo $nom_zone; ?></h3>
+
+                        <div class="content-box-tools">
                             <a class="parametres" title="parametres" rel="modal" href="<?php echo __WWW__; ?>/cms/zoneparams?id_zone=<?php echo $zone['id_zone']; ?>&amp;id_page=<?php echo $page['id']; ?>" >
                                 <img src="<?php echo __WWW_ROOT_CMS__; ?>/skin/images/icons/tools.png" alt="paramètres" />
                             </a>
-                        </h3>
-
-                        <div class="content-box-tools">
                             <a class="ajouter" title="ajouter un contenu" rel="modal" href="<?php echo __WWW__; ?>/contenus/addcontenu?id=<?php echo $zone['id_zone']; ?>&amp;page=<?php echo $ns->ifGet('int', 'id'); ?>" >
                                 <img src="<?php echo __WWW_ROOT_CMS__; ?>/skin/images/add.png" alt="ajouter un contenu" />
                             </a>
@@ -68,16 +68,13 @@ if (isset($data['page']) && $data['page']) {
                                                 <a title="modifier" href="<?php echo __WWW__; ?>/contenus/editcontenu?id=<?php echo $contenu['id_contenu']; ?>&amp;id_page=<?php echo $page['id']; ?>&amp;type=<?php echo $contenu['type_contenu']; ?>" >
                                                     <strong><?php echo $contenu['nom_contenu']; ?></strong>
                                                 </a>
-                                                <a class="modifier" title="modifier" href="<?php echo __WWW__; ?>/contenus/editcontenu?id=<?php echo $contenu['id_contenu']; ?>&amp;id_page=<?php echo $page['id']; ?>&amp;type=<?php echo $contenu['type_contenu']; ?>" >
-                                                    <img src="<?php echo __WWW_ROOT_CMS__; ?>/skin/images/icons/write.png" alt="modifier" />
-                                                </a>
                                             </div>
                                             <div class="contenus_list_content">
                                                 <a title="modifier" href="<?php echo __WWW__; ?>/contenus/editcontenu?id=<?php echo $contenu['id_contenu']; ?>&amp;id_page=<?php echo $page['id']; ?>&amp;type=<?php echo $contenu['type_contenu']; ?>" >
 <?php
                     if (!isset($contenu['contenu'][$type_contenu])) {
                         // affichage de l'apercu indisponible... 
-                        if (!$contenu['traductions'][$request->LANG]) {
+                        if (!$contenu['traductions'][$request['LANG']]) {
 ?>
                                         <span class="notrad"> non traduit </span>
 <?php 
@@ -128,25 +125,10 @@ if (isset($data['page']) && $data['page']) {
 <?php 
                     }
 ?>
-<?php
-                    if ($zone['infos'][$id_contenu]['valide'] == 1) {
-?>
-                                            <a class="publier" title="cliquez pour dépublier" href="<?php echo __WWW__; ?>/contenus/publishcontenu?id=<?php echo $contenu['id_contenu']; ?>&amp;type=<?php echo $contenu['type_contenu']; ?>&amp;publish=0&amp;id_page=<?php echo $page['id']; ?>" >
-                                                <img src="<?php echo __WWW_ROOT_CMS__; ?>/skin/images/publish.jpg" alt="dépublier" />
-                                            </a>
-<?php 
-                    } else {
-?>
-                                            <a class="publier" title="cliquez pour publier" href="<?php echo __WWW__; ?>/contenus/publishcontenu?id=<?php echo $contenu['id_contenu']; ?>&amp;type=<?php echo $contenu['type_contenu']; ?>&amp;publish=1&amp;id_page=<?php echo $page['id']; ?>" >
-                                                <img src="<?php echo __WWW_ROOT_CMS__; ?>/skin/images/not_publish.jpg" alt="publier" />
-                                            </a>
-<?php 
-                    }
-?>
 
                 <!-- traductions -->
 <?php
-                    $lang_dispo = array_keys($request->EQUIV);
+                    $lang_dispo = array_keys($request['EQUIV']);
                     if (count($lang_dispo) > 1) {
 ?>
                                         <br />
@@ -175,7 +157,25 @@ if (isset($data['page']) && $data['page']) {
 
                                         </td>
                                         <td class="col3">
-                                            <img class="cms_handle" src="<?php echo __WWW_ROOT_CMS__; ?>/skin/images/icons/move.png" alt="déplacer" title="déplacer" />
+                                                <img class="cms_handle" src="<?php echo __WWW_ROOT_CMS__; ?>/skin/images/icons/move.png" alt="déplacer" title="déplacer" />
+<?php
+                    if ($zone['infos'][$id_contenu]['valide'] == 1) {
+?>
+                                            <a class="publier" title="cliquez pour dépublier" href="<?php echo __WWW__; ?>/contenus/publishcontenu?id=<?php echo $contenu['id_contenu']; ?>&amp;type=<?php echo $contenu['type_contenu']; ?>&amp;publish=0&amp;id_page=<?php echo $page['id']; ?>" >
+                                                <img src="<?php echo __WWW_ROOT_CMS__; ?>/skin/images/publish.jpg" alt="dépublier" />
+                                            </a>
+<?php 
+                    } else {
+?>
+                                            <a class="publier" title="cliquez pour publier" href="<?php echo __WWW__; ?>/contenus/publishcontenu?id=<?php echo $contenu['id_contenu']; ?>&amp;type=<?php echo $contenu['type_contenu']; ?>&amp;publish=1&amp;id_page=<?php echo $page['id']; ?>" >
+                                                <img src="<?php echo __WWW_ROOT_CMS__; ?>/skin/images/not_publish.jpg" alt="publier" />
+                                            </a>
+<?php 
+                    }
+?>
+                                            <a class="modifier" title="modifier" href="<?php echo __WWW__; ?>/contenus/editcontenu?id=<?php echo $contenu['id_contenu']; ?>&amp;id_page=<?php echo $page['id']; ?>&amp;type=<?php echo $contenu['type_contenu']; ?>" >
+                                                <img src="<?php echo __WWW_ROOT_CMS__; ?>/skin/images/icons/write.png" alt="modifier" />
+                                            </a>
                                             <a class="parametres" title="parametres" rel="modal" href="<?php echo __WWW__; ?>/cms/contenuparams?id_contenu=<?php echo $contenu['id_contenu']; ?>&amp;id_zone=<?php echo $zone['id_zone']; ?>&amp;id_page=<?php echo $page['id']; ?>" >
                                                 <img src="<?php echo __WWW_ROOT_CMS__; ?>/skin/images/icons/tools.png" alt="parametres" />
                                             </a>
