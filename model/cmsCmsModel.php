@@ -401,8 +401,6 @@ class cmsCmsModel extends cmsCmsModel_Parent
         $db = $this->getModel('db');
         // traitement des donnees
         $id_page        = (int) $id_page;
-        $template_page  = $ns->ifPost("int", "template_page"); 
-        $slug_page      = $ns->urlize($ns->ifPost("string", "slug_page")); 
         if (empty($slug_page)) {
             $slug_page      = $ns->urlize($nom_page); 
         }

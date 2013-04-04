@@ -40,7 +40,7 @@ class cmsHookHelper extends cmsHookHelper_Parent
             $ns = $this->getModel('fonctions');
             // si on a appelle une URL non reecrite, on redirige en 301 vers l'URL reecrite (= SEO friendly)
             if (strpos(Clementine::$register['request_uri'], $prefixe_langue . 'cms/viewpage') === 0) {
-                $id_page = $ns->ifGet('int', 'id');
+                $id_page = $request->get('int', 'id');
                 if ($id_page) {
                     // renvoie en 301 vers l'URL adequate si elle existe
                     $sql = 'SELECT slug FROM ' . $mod->table_cms_page . ' WHERE id_page = \'' . $id_page . '\' AND slug != \'\' LIMIT 1';

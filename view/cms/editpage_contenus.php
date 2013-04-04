@@ -23,7 +23,7 @@ if (isset($data['page']) && $data['page']) {
                         </h3>
 
                         <div class="content-box-tools">
-                            <a class="ajouter" title="ajouter un contenu" rel="modal" href="<?php echo __WWW__; ?>/contenus/addcontenu?id=<?php echo $zone['id_zone']; ?>&amp;page=<?php echo $ns->ifGet('int', 'id'); ?>" >
+                            <a class="ajouter" title="ajouter un contenu" rel="modal" href="<?php echo __WWW__; ?>/contenus/addcontenu?id=<?php echo $zone['id_zone']; ?>&amp;page=<?php echo $request->get('int', 'id'); ?>" >
                                 <img src="<?php echo __WWW_ROOT_CMS__; ?>/skin/images/add.png" alt="ajouter un contenu" />
                             </a>
                         </div>

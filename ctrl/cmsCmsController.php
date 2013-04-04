@@ -25,7 +25,7 @@ class cmsCmsController extends cmsCmsController_Parent
         if (isset($params['id_page'])) {
             $id_page = $params['id_page'];
         } else {
-            $id_page = $ns->ifGet("int", "id"); 
+            $id_page = $request->get("int", "id"); 
         }
         $cms = $this->getModel('cms');
         $this->data['page'] = $cms->getPage($id_page);
@@ -70,7 +70,7 @@ class cmsCmsController extends cmsCmsController_Parent
      * @access public
      * @return void
      */
-    function indexAction($request)
+    function indexAction($request, $params = null)
     {
         if ($this->getModel('users')->needPrivilege('manage_pages')) {
             if (Clementine::$config['module_jstools']['use_google_cdn']) {
@@ -106,7 +106,7 @@ class cmsCmsController extends cmsCmsController_Parent
      * @access public
      * @return void
      */
-    function editpageAction($request)
+    function editpageAction($request, $params = null)
     {
         if ($this->getModel('users')->needPrivilege('manage_pages')) {
             if (Clementine::$config['module_jstools']['use_google_cdn']) {
@@ -123,12 +123,12 @@ class cmsCmsController extends cmsCmsController_Parent
             $this->getModel('cssjs')->register_foot('clementine_cms_editpage_js', $script);
             $ns = $this->getModel('fonctions');
             $cms = $this->getModel('cms');
-            if ($_POST) {
+            if ($request->POST) {
                 // recupere les parametres 
-                $id_page        = $ns->ifPost("int", "id_page"); 
-                $nom_page       = stripslashes($ns->ifPost("html", "nom_page")); 
-                $slug_page      = $ns->urlize($ns->ifPost("string", "slug_page")); 
-                $template_page  = $ns->ifPost("int", "template_page"); 
+                $id_page        = $request->post("int", "id_page"); 
+                $nom_page       = stripslashes($request->post("html", "nom_page")); 
+                $slug_page      = $ns->urlize($request->post("string", "slug_page")); 
+                $template_page  = $request->post("int", "template_page"); 
                 // verification des donnees requises
                 $erreurs = array(); 
                 if (!strlen($id_page)) {
@@ -150,13 +150,13 @@ class cmsCmsController extends cmsCmsController_Parent
                         $nom_param = 'zone_content_order_';
                         $len = $ns->strlen($nom_param);
                         $zones_a_reordonner = array();
-                        foreach ($_POST as $key => $val) {
+                        foreach ($request->POST as $key => $val) {
                             if ($ns->substr($key, 0, $len) == $nom_param) {
                                 $zones_a_reordonner[] = $ns->substr($key, $len);
                             }
                         }
                         foreach ($zones_a_reordonner as $id_zone) {
-                            $ordre_serie = $ns->ifPost('string', $nom_param . $id_zone);
+                            $ordre_serie = $request->post('string', $nom_param . $id_zone);
                             if ($ordre_serie) {
                                 $ordre = explode(',', $ordre_serie);
                                 $instance_zone = $cms->getInstanceZone($id_zone, $id_page);
@@ -169,7 +169,7 @@ class cmsCmsController extends cmsCmsController_Parent
                     }
                 }
             } else {
-                $id_page = $ns->ifGet("int", "id"); 
+                $id_page = $request->get("int", "id"); 
                 // recupere les infos generales pour toute page
                 $this->data['templates_dispo'] = $cms->getAllTemplates();
                 $template = $cms->getPageTemplate($id_page);
@@ -210,11 +210,11 @@ class cmsCmsController extends cmsCmsController_Parent
      * @access public
      * @return void
      */
-    function editpage_okAction($request) 
+    function editpage_okAction($request, $params = null) 
     {
         if ($this->getModel('users')->needPrivilege('manage_pages')) {
             $ns = $this->getModel('fonctions');
-            $this->data['id'] = $ns->ifGet("int", "id"); 
+            $this->data['id'] = $request->get("int", "id"); 
         } else {
             $this->getModel('fonctions')->redirect(__WWW__);
         }
@@ -226,11 +226,11 @@ class cmsCmsController extends cmsCmsController_Parent
      * @access public
      * @return void
      */
-    function delpageAction($request)
+    function delpageAction($request, $params = null)
     {
         if ($this->getModel('users')->needPrivilege('manage_pages')) {
             $ns = $this->getModel('fonctions');
-            $id_page        = $ns->ifGet("int", "id"); 
+            $id_page        = $request->get("int", "id"); 
             $cms = $this->getModel('cms');
             $cms->delPage($id_page);
             $ns->redirect(__WWW__ . '/cms');
@@ -245,14 +245,14 @@ class cmsCmsController extends cmsCmsController_Parent
      * @access public
      * @return void
      */
-    function pageparamsAction($request)
+    function pageparamsAction($request, $params = null)
     {
         if ($this->getModel('users')->needPrivilege('manage_pages')) {
             $ns = $this->getModel('fonctions');
             $cms = $this->getModel('cms');
-            if ($_POST) {
+            if ($request->POST) {
                 // recupere les parametres 
-                $id_page = $ns->ifPost("int", "id_page"); 
+                $id_page = $request->post("int", "id_page"); 
                 // verification des donnees requises
                 $erreurs = array(); 
                 if (!strlen($id_page)) {
@@ -264,24 +264,24 @@ class cmsCmsController extends cmsCmsController_Parent
                     // enregistre les modifs de la page et redirection pour eviter les problemes de rafraichissement
                     $params = array();
                     // prise en compte des parametres existants
-                    foreach ($_POST as $key => $val) {
-                        $val = $ns->ifPost('html', $key); // on recupere $val de la maniere "standard"
+                    foreach ($request->POST as $key => $val) {
+                        $val = $request->post('html', $key); // on recupere $val de la maniere "standard"
                         if ($ns->substr($key, 0, $ns->strlen('param_name_')) == 'param_name_') {
                             $rang = (int) $ns->substr($key, $ns->strlen('param_name_'));
                             $param_name = $val;
-                            $param_val = $ns->ifPost('html', 'param_val_' . $rang);
+                            $param_val = $request->post('html', 'param_val_' . $rang);
                             if ($param_name) {
                                 $params[$param_name] = $param_val;
                             }
                         }
                     }
                     // prise en compte des nouveaux parametres
-                    foreach ($_POST as $key => $val) {
-                        $val = $ns->ifPost('html', $key); // on recupere $val de la maniere "standard"
+                    foreach ($request->POST as $key => $val) {
+                        $val = $request->post('html', $key); // on recupere $val de la maniere "standard"
                         if ($ns->substr($key, 0, $ns->strlen('new_param_name_')) == 'new_param_name_') {
                             $rang = (int) $ns->substr($key, $ns->strlen('new_param_name_'));
                             $param_name = $val;
-                            $param_val = $ns->ifPost('html', 'new_param_val_' . $rang);
+                            $param_val = $request->post('html', 'new_param_val_' . $rang);
                             if ($param_name) {
                                 $params[$param_name] = $param_val;
                             }
@@ -294,7 +294,7 @@ class cmsCmsController extends cmsCmsController_Parent
                     }
                 }
             }
-            $id_page = $ns->ifGet("int", "id_page"); 
+            $id_page = $request->get("int", "id_page"); 
             $this->data['id_page'] = $id_page;
             $this->data['params'] = $cms->getPageParams($id_page);
             $param_keys = array_keys($this->data['params']);
@@ -330,11 +330,11 @@ class cmsCmsController extends cmsCmsController_Parent
      * @access public
      * @return void
      */
-    function pageparams_okAction($request) 
+    function pageparams_okAction($request, $params = null) 
     {
         if ($this->getModel('users')->needPrivilege('manage_pages')) {
             $ns = $this->getModel('fonctions');
-            $this->data['id_page'] = $ns->ifGet("int", "id_page"); 
+            $this->data['id_page'] = $request->get("int", "id_page"); 
         } else {
             $this->getModel('fonctions')->redirect(__WWW__);
         }
@@ -346,15 +346,15 @@ class cmsCmsController extends cmsCmsController_Parent
      * @access public
      * @return void
      */
-    function zoneparamsAction($request)
+    function zoneparamsAction($request, $params = null)
     {
         if ($this->getModel('users')->needPrivilege('manage_pages')) {
             $ns = $this->getModel('fonctions');
             $cms = $this->getModel('cms');
-            if ($_POST) {
+            if ($request->POST) {
                 // recupere les parametres 
-                $id_zone = $ns->ifPost("int", "id_zone"); 
-                $id_page = $ns->ifPost("int", "id_page"); 
+                $id_zone = $request->post("int", "id_zone"); 
+                $id_page = $request->post("int", "id_page"); 
                 // verification des donnees requises
                 $erreurs = array(); 
                 if (!strlen($id_zone)) {
@@ -369,24 +369,24 @@ class cmsCmsController extends cmsCmsController_Parent
                     // enregistre les modifs de la zone et redirection pour eviter les problemes de rafraichissement
                     $params = array();
                     // prise en compte des parametres existants
-                    foreach ($_POST as $key => $val) {
-                        $val = $ns->ifPost('html', $key); // on recupere $val de la maniere "standard"
+                    foreach ($request->POST as $key => $val) {
+                        $val = $request->post('html', $key); // on recupere $val de la maniere "standard"
                         if ($ns->substr($key, 0, $ns->strlen('param_name_')) == 'param_name_') {
                             $rang = (int) $ns->substr($key, $ns->strlen('param_name_'));
                             $param_name = $val;
-                            $param_val = $ns->ifPost('html', 'param_val_' . $rang);
+                            $param_val = $request->post('html', 'param_val_' . $rang);
                             if ($param_name) {
                                 $params[$param_name] = $param_val;
                             }
                         }
                     }
                     // prise en compte des nouveaux parametres
-                    foreach ($_POST as $key => $val) {
-                        $val = $ns->ifPost('html', $key); // on recupere $val de la maniere "standard"
+                    foreach ($request->POST as $key => $val) {
+                        $val = $request->post('html', $key); // on recupere $val de la maniere "standard"
                         if ($ns->substr($key, 0, $ns->strlen('new_param_name_')) == 'new_param_name_') {
                             $rang = (int) $ns->substr($key, $ns->strlen('new_param_name_'));
                             $param_name = $val;
-                            $param_val = $ns->ifPost('html', 'new_param_val_' . $rang);
+                            $param_val = $request->post('html', 'new_param_val_' . $rang);
                             if ($param_name) {
                                 $params[$param_name] = $param_val;
                             }
@@ -399,8 +399,8 @@ class cmsCmsController extends cmsCmsController_Parent
                     }
                 }
             }
-            $id_zone = $ns->ifGet("int", "id_zone"); 
-            $id_page = $ns->ifGet("int", "id_page"); 
+            $id_zone = $request->get("int", "id_zone"); 
+            $id_page = $request->get("int", "id_page"); 
             // pour chaque zone, recupere les parametres et les contenus
             $this->data['id_zone'] = $id_zone;
             $this->data['id_page'] = $id_page;
@@ -438,12 +438,12 @@ class cmsCmsController extends cmsCmsController_Parent
      * @access public
      * @return void
      */
-    function zoneparams_okAction($request) 
+    function zoneparams_okAction($request, $params = null) 
     {
         if ($this->getModel('users')->needPrivilege('manage_pages')) {
             $ns = $this->getModel('fonctions');
-            $this->data['id_page'] = $ns->ifGet("int", "id_page"); 
-            $this->data['id_zone'] = $ns->ifGet("int", "id_zone"); 
+            $this->data['id_page'] = $request->get("int", "id_page"); 
+            $this->data['id_zone'] = $request->get("int", "id_zone"); 
         } else {
             $this->getModel('fonctions')->redirect(__WWW__);
         }
@@ -455,17 +455,17 @@ class cmsCmsController extends cmsCmsController_Parent
      * @access public
      * @return void
      */
-    function contenuparamsAction($request)
+    function contenuparamsAction($request, $params = null)
     {
         if ($this->getModel('users')->needPrivilege('manage_pages')) {
             $this->getModel('cssjs')->register_css('clementine_cms_css', array('src' => __WWW_ROOT_CMS__ . '/skin/css/cms.css'));
             $ns = $this->getModel('fonctions');
             $cms = $this->getModel('cms');
-            if ($_POST) {
+            if ($request->POST) {
                 // recupere les parametres 
-                $id_contenu = $ns->ifPost("int", "id_contenu"); 
-                $id_zone = $ns->ifPost("int", "id_zone"); 
-                $id_page = $ns->ifPost("int", "id_page"); 
+                $id_contenu = $request->post("int", "id_contenu"); 
+                $id_zone = $request->post("int", "id_zone"); 
+                $id_page = $request->post("int", "id_page"); 
                 // verification des donnees requises
                 $erreurs = array(); 
                 if (!strlen($id_contenu)) {
@@ -483,24 +483,24 @@ class cmsCmsController extends cmsCmsController_Parent
                     // enregistre les modifs des parametres du contenu et redirection pour eviter les problemes de rafraichissement
                     $params = array();
                     // prise en compte des parametres existants
-                    foreach ($_POST as $key => $val) {
-                        $val = $ns->ifPost('html', $key); // on recupere $val de la maniere "standard"
+                    foreach ($request->POST as $key => $val) {
+                        $val = $request->post('html', $key); // on recupere $val de la maniere "standard"
                         if ($ns->substr($key, 0, $ns->strlen('param_name_')) == 'param_name_') {
                             $rang = (int) $ns->substr($key, $ns->strlen('param_name_'));
                             $param_name = $val;
-                            $param_val = $ns->ifPost('html', 'param_val_' . $rang);
+                            $param_val = $request->post('html', 'param_val_' . $rang);
                             if ($param_name) {
                                 $params[$param_name] = $param_val;
                             }
                         }
                     }
                     // prise en compte des nouveaux parametres
-                    foreach ($_POST as $key => $val) {
-                        $val = $ns->ifPost('html', $key); // on recupere $val de la maniere "standard"
+                    foreach ($request->POST as $key => $val) {
+                        $val = $request->post('html', $key); // on recupere $val de la maniere "standard"
                         if ($ns->substr($key, 0, $ns->strlen('new_param_name_')) == 'new_param_name_') {
                             $rang = (int) $ns->substr($key, $ns->strlen('new_param_name_'));
                             $param_name = $val;
-                            $param_val = $ns->ifPost('html', 'new_param_val_' . $rang);
+                            $param_val = $request->post('html', 'new_param_val_' . $rang);
                             if ($param_name) {
                                 $params[$param_name] = $param_val;
                             }
@@ -514,9 +514,9 @@ class cmsCmsController extends cmsCmsController_Parent
                     }
                 }
             }
-            $id_contenu = $ns->ifGet("int", "id_contenu"); 
-            $id_zone = $ns->ifGet("int", "id_zone"); 
-            $id_page = $ns->ifGet("int", "id_page"); 
+            $id_contenu = $request->get("int", "id_contenu"); 
+            $id_zone = $request->get("int", "id_zone"); 
+            $id_page = $request->get("int", "id_page"); 
             // pour chaque zone, recupere les parametres et les contenus
             $this->data['id_contenu'] = $id_contenu;
             $this->data['id_zone'] = $id_zone;
@@ -556,13 +556,13 @@ class cmsCmsController extends cmsCmsController_Parent
      * @access public
      * @return void
      */
-    function contenuparams_okAction($request)
+    function contenuparams_okAction($request, $params = null)
     {
         if ($this->getModel('users')->needPrivilege('manage_pages')) {
             $ns = $this->getModel('fonctions');
-            $this->data['id_page']      = $ns->ifGet("int", "id_page"); 
-            $this->data['id_zone']      = $ns->ifGet("int", "id_zone"); 
-            $this->data['id_contenu']   = $ns->ifGet("int", "id_contenu"); 
+            $this->data['id_page']      = $request->get("int", "id_page"); 
+            $this->data['id_zone']      = $request->get("int", "id_zone"); 
+            $this->data['id_contenu']   = $request->get("int", "id_contenu"); 
         } else {
             $this->getModel('fonctions')->redirect(__WWW__);
         }
