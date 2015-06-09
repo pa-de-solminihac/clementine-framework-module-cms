@@ -73,26 +73,26 @@ class cmsCmsController extends cmsCmsController_Parent
     function indexAction($request, $params = null)
     {
         if ($this->getModel('users')->needPrivilege('manage_pages')) {
-            if (Clementine::$config['module_jstools']['use_google_cdn']) {
-                $this->getModel('cssjs')->register_js('jquery', array('src' => 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'));
-            } else {
-                $this->getModel('cssjs')->register_js('jquery', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/jquery/jquery.min.js'));
-            }
-            $this->getModel('cssjs')->register_css('jquery.colorbox', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/colorbox/colorbox.css', 'media' => 'screen'));
-            $this->getModel('cssjs')->register_js('jquery.colorbox', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/colorbox/jquery.colorbox-min.js'));
-            $this->getModel('cssjs')->register_css('clementine_cms_css', array('src' => __WWW_ROOT_CMS__ . '/skin/css/cms.css'));
-            $this->data['pages'] = $this->getModel('cms')->getPages('nom_page ASC');
             $cssjs = $this->getModel('cssjs');
+            $cssjs->register_css('clementine_cms_css', array('src' => __WWW_ROOT_CMS__ . '/skin/css/cms.css'));
+            $this->data['pages'] = $this->getModel('cms')->getPages('nom_page ASC');
             // jQuery
-            if (Clementine::$config['module_jstools']['use_google_cdn']) {
-                $cssjs->register_js('jquery', array('src' => 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'));
-            } else {
-                $cssjs->register_js('jquery', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/jquery/jquery.min.js'));
-            }
+            $cssjs->register_foot('jquery', array(
+                'src' => $this->getHelper('jquery')->getUrl()
+            ));
             // dataTables : sortable tables
-            $cssjs->register_css('jquery.dataTables',  array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/js/jquery.dataTables/dataTables.css'));
-            $cssjs->register_js('jquery.dataTables', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/js/jquery.dataTables/jquery.dataTables.min.js'));
-            $cssjs->register_foot('clementine_jstools-datatables', $this->getBlockHtml('jstools/js_datatables', $this->data));
+            $cssjs = $this->getModel('cssjs');
+            // dataTables : sortable tables
+            $cssjs->register_css('clementine-jquery.dataTables', array(
+                'src' => __WWW_ROOT_JQUERYDATATABLES__ . '/skin/css/clementine-dataTables.css'
+            ));
+            $cssjs->register_css('jquery.dataTables', array(
+                'src' => __WWW_ROOT_JQUERYDATATABLES__ . '/skin/css/jquery.dataTables.css'
+            ));
+            $cssjs->register_foot('jquery.dataTables', array(
+                'src' => __WWW_ROOT_JQUERYDATATABLES__ . '/skin/js/jquery.dataTables.min.js'
+            ));
+            $cssjs->register_foot('clementine_crud-datatables', $this->getBlockHtml('jquerydatatables/js_datatables', $this->data, $request));
             $script = $this->getBlockHtml('cms/index_js', $this->data);
             $this->getModel('cssjs')->register_foot('clementine_cms_index_js', $script);
         } else {
@@ -109,18 +109,17 @@ class cmsCmsController extends cmsCmsController_Parent
     function editpageAction($request, $params = null)
     {
         if ($this->getModel('users')->needPrivilege('manage_pages')) {
-            if (Clementine::$config['module_jstools']['use_google_cdn']) {
-                $this->getModel('cssjs')->register_js('jquery', array('src' => 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'));
-                $this->getModel('cssjs')->register_js('jquery.ui', array('src' => 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.22/jquery-ui.min.js'));
-            } else {
-                $this->getModel('cssjs')->register_js('jquery', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/jquery/jquery.min.js'));
-                $this->getModel('cssjs')->register_js('jquery.ui', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/jquery-ui/js/jquery-ui.custom.min.js'));
-            }
-            $this->getModel('cssjs')->register_css('jquery.colorbox', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/colorbox/colorbox.css', 'media' => 'screen'));
-            $this->getModel('cssjs')->register_js('jquery.colorbox', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/colorbox/jquery.colorbox-min.js'));
-            $this->getModel('cssjs')->register_css('clementine_cms_css', array('src' => __WWW_ROOT_CMS__ . '/skin/css/cms.css'));
+            $cssjs = $this->getModel('cssjs');
+            // jQuery
+            $cssjs->register_foot('jquery', array(
+                'src' => $this->getHelper('jquery')->getUrl()
+            ));
+            $cssjs->register_foot('jquery.ui', array(
+                'src' => $this->getHelper('jqueryui')->getUrl()
+            ));
+            $cssjs->register_css('clementine_cms_css', array('src' => __WWW_ROOT_CMS__ . '/skin/css/cms.css'));
             $script = $this->getBlockHtml('cms/editpage_js', $this->data);
-            $this->getModel('cssjs')->register_foot('clementine_cms_editpage_js', $script);
+            $cssjs->register_foot('clementine_cms_editpage_js', $script);
             $ns = $this->getModel('fonctions');
             $cms = $this->getModel('cms');
             if ($request->POST) {
@@ -157,11 +156,13 @@ class cmsCmsController extends cmsCmsController_Parent
                         }
                         foreach ($zones_a_reordonner as $id_zone) {
                             $ordre_serie = $request->post('string', $nom_param . $id_zone);
-                            if ($ordre_serie) {
-                                $ordre = explode(',', $ordre_serie);
-                                $instance_zone = $cms->getInstanceZone($id_zone, $id_page);
-                                $cms->sortInstanceZoneContents($instance_zone['id_instance_zone'], $ordre);
+                            $ordre = explode(',', $ordre_serie);
+                            $ordre_avec_type = array();
+                            foreach ($ordre as $id_contenu) {
+                                $ordre_avec_type[$id_contenu] = $request->post('string', 'content_type_' . $id_contenu);
                             }
+                            $instance_zone = $cms->getInstanceZone($id_zone, $id_page);
+                            $cms->sortInstanceZoneContents($instance_zone['id_instance_zone'], $ordre_avec_type);
                         }
                         $ns->redirect(__WWW__ . '/cms/editpage_ok?id=' . $new_id_page);
                     } else {
@@ -307,18 +308,14 @@ class cmsCmsController extends cmsCmsController_Parent
             }
             $this->data['params_keys'] = '["' . implode('","', $param_keys) . '"]';
             $this->data['params_vals'] = '["' . implode('","', $param_vals) . '"]';
-            // recupere le contenu du script a injecter dans le footer
-            $script = $this->getBlockHtml('cms/jquery_textbox_replace', $this->data);
             // charge les js et css necessaires
-            if (Clementine::$config['module_jstools']['use_google_cdn']) {
-                $this->getModel('cssjs')->register_js('jquery', array('src' => 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'));
-            } else {
-                $this->getModel('cssjs')->register_js('jquery', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/jquery/jquery.min.js'));
-            }
-            $this->getModel('cssjs')->register_js('jquery.textbox', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/js/jquery.textbox/jquery.textbox.js'));
-            $this->getModel('cssjs')->register_css('jquery.textbox', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/js/jquery.textbox/jquery.textbox.css'));
-            $this->getModel('cssjs')->register_css('clementine_cms_css', array('src' => __WWW_ROOT_CMS__ . '/skin/css/cms.css'));
-            $this->getModel('cssjs')->register_foot('jquery.textbox.replace', $script);
+            $cssjs = $this->getModel('cssjs');
+            // jQuery
+            $cssjs->register_foot('jquery', array(
+                'src' => $this->getHelper('jquery')->getUrl()
+            ));
+            $cssjs->register_css('clementine_cms_css', array('src' => __WWW_ROOT_CMS__ . '/skin/css/cms.css'));
+            $cssjs->register_foot('clementine_cms-js_pageparams', $this->getBlockHtml('cms/js_pageparams', $this->data));
         } else {
             $this->getModel('fonctions')->redirect(__WWW__);
         }
@@ -415,18 +412,14 @@ class cmsCmsController extends cmsCmsController_Parent
             }
             $this->data['params_keys'] = '["' . implode('","', $param_keys) . '"]';
             $this->data['params_vals'] = '["' . implode('","', $param_vals) . '"]';
-            // recupere le contenu du script a injecter dans le footer
-            $script = $this->getBlockHtml('cms/jquery_textbox_replace', $this->data);
             // charge les js et css necessaires
-            if (Clementine::$config['module_jstools']['use_google_cdn']) {
-                $this->getModel('cssjs')->register_js('jquery', array('src' => 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'));
-            } else {
-                $this->getModel('cssjs')->register_js('jquery', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/jquery/jquery.min.js'));
-            }
-            $this->getModel('cssjs')->register_js('jquery.textbox', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/js/jquery.textbox/jquery.textbox.js'));
-            $this->getModel('cssjs')->register_css('jquery.textbox', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/js/jquery.textbox/jquery.textbox.css'));
-            $this->getModel('cssjs')->register_css('clementine_cms_css', array('src' => __WWW_ROOT_CMS__ . '/skin/css/cms.css'));
-            $this->getModel('cssjs')->register_foot('jquery.textbox.replace', $script);
+            $cssjs = $this->getModel('cssjs');
+            // jQuery
+            $cssjs->register_foot('jquery', array(
+                'src' => $this->getHelper('jquery')->getUrl()
+            ));
+            $cssjs->register_css('clementine_cms_css', array('src' => __WWW_ROOT_CMS__ . '/skin/css/cms.css'));
+            $cssjs->register_foot('clementine_cms-js_zoneparams', $this->getBlockHtml('cms/js_zoneparams', $this->data));
         } else {
             $this->getModel('fonctions')->redirect(__WWW__);
         }
@@ -533,18 +526,14 @@ class cmsCmsController extends cmsCmsController_Parent
             }
             $this->data['params_keys'] = '["' . implode('","', $param_keys) . '"]';
             $this->data['params_vals'] = '["' . implode('","', $param_vals) . '"]';
-            // recupere le contenu du script a injecter dans le footer
-            $script = $this->getBlockHtml('cms/jquery_textbox_replace', $this->data);
             // charge les js et css necessaires
-            if (Clementine::$config['module_jstools']['use_google_cdn']) {
-                $this->getModel('cssjs')->register_js('jquery', array('src' => 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'));
-            } else {
-                $this->getModel('cssjs')->register_js('jquery', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/jquery/jquery.min.js'));
-            }
-            $this->getModel('cssjs')->register_js('jquery.textbox', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/js/jquery.textbox/jquery.textbox.js'));
-            $this->getModel('cssjs')->register_css('jquery.textbox', array('src' => __WWW_ROOT_JSTOOLS__ . '/skin/js/jquery.textbox/jquery.textbox.css'));
-            $this->getModel('cssjs')->register_css('clementine_cms_css', array('src' => __WWW_ROOT_CMS__ . '/skin/css/cms.css'));
-            $this->getModel('cssjs')->register_foot('jquery.textbox.replace', $script);
+            $cssjs = $this->getModel('cssjs');
+            // jQuery
+            $cssjs->register_foot('jquery', array(
+                'src' => $this->getHelper('jquery')->getUrl()
+            ));
+            $cssjs->register_css('clementine_cms_css', array('src' => __WWW_ROOT_CMS__ . '/skin/css/cms.css'));
+            $cssjs->register_foot('clementine_cms-js_contenuparams', $this->getBlockHtml('cms/js_contenuparams', $this->data));
         } else {
             $this->getModel('fonctions')->redirect(__WWW__);
         }

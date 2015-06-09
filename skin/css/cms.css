@@ -13,7 +13,7 @@
 
 .notrad,
 .nopublish {
-    color: red;
+    color: #F00;
 }
 .zones_list > .notradbg {
     background: rgba(0,0,0,0.1);
@@ -32,7 +32,8 @@
 .zones_list_head a,
 .contenus_list_head a,
 .contenus_list_nom a,
-.contenus_list_content a {
+.contenus_list a,
+.contenus_list span {
     padding: 0 1em; 
 }
 
@@ -40,11 +41,13 @@
     font-weight: bold;
 }
 
-.contenus_list_content a {
-    display: block;
+.publish > span,
+.nopublish > span,
+.contenus_list a > span {
+    opacity: 0.3;
 }
 
-.contenus_index_list img.cms_handle {
+.contenus_index_list .cms_handle {
     cursor: move;
 }
 

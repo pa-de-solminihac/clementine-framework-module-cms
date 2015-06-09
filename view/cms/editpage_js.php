@@ -5,8 +5,10 @@ function delete_contenu(id_contenu, type_contenu, id_page) {
     }
     return false;
 }
+
 jQuery('.contenus_index_list tbody').sortable({
-    handle: 'img.cms_handle',
+    handle: '.cms_handle',
+    connectWith: '.contenus_index_list > tbody', // pas encore prêt car le CMS n'enregistre pas le contenu dans sa nouvelle zone
     forcePlaceholderSize: 'true',
     placeholder: 'cms_sortable_placeholder',
     update: function () {

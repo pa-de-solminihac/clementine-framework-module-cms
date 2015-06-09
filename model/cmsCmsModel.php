@@ -124,7 +124,7 @@ class cmsCmsModel extends cmsCmsModel_Parent
     {
         $id_category = (int) $id_category;
         $db = $this->getModel('db');
-        $sql = "SELECT * FROM `$this->table_cms_page` ";
+        $sql = "SELECT * FROM `$this->table_cms_page` INNER JOIN `$this->table_cms_template` ON `$this->table_cms_page`.`template_id_template` = `$this->table_cms_template`.`id_template` ";
         if ($id_category) {
             $sql .= "INNER JOIN `" . $this->table_cms_page_categories . "` ON `id_page` = `page_id_page` 
                      INNER JOIN `" . $this->table_categories . "` cat ON `categories_id_categorie` = cat.`id` 
@@ -143,6 +143,9 @@ class cmsCmsModel extends cmsCmsModel_Parent
             $pages[$res['id_page']]['id'] = $res['id_page'];
             $pages[$res['id_page']]['nom'] = $res['nom_page'];
             $pages[$res['id_page']]['slug'] = $res['slug'];
+            $pages[$res['id_page']]['active'] = $res['active'];
+            $pages[$res['id_page']]['template_id'] = $res['id_template'];
+            $pages[$res['id_page']]['template_chemin'] = $res['chemin'];
             if ($id_category) {
                 $pages[$res['id_page']]['rang_tri']           = $res['page_rang_tri'];
                 $pages[$res['id_page']]['category_id']        = $res['id'];
@@ -329,7 +332,7 @@ class cmsCmsModel extends cmsCmsModel_Parent
                     $res[$key] = stripslashes($val);
                 }
             }
-            $infos[] = array('id_contenu' => $res['id_contenu'], 'table_contenu' => $res['table_contenu'], 'nom' => $res['nom_contenu'],
+            $infos[$res['id_contenu']] = array('id_contenu' => $res['id_contenu'], 'table_contenu' => $res['table_contenu'], 'nom' => $res['nom_contenu'],
                              'valide' => $res['valide'], 'date_lancement' => $res['date_lancement'], 'date_arret' => $res['date_arret']);
         }
         return $infos;
@@ -389,7 +392,32 @@ class cmsCmsModel extends cmsCmsModel_Parent
                 }
                 $tab_contenus['traductions'] = $traductions;
             }
-            $contenus[] = $tab_contenus;
+            $contenus[$info_contenu['id_contenu']] = $tab_contenus;
+        }
+        return $contenus;
+    }
+
+    /**
+     * getInstanceZoneContents : renvoie la liste des contenus de la zone $id_instance_zone
+     *
+     * @param mixed $id_instance_zone
+     * @access public
+     * @return void
+     */
+    public function getInstanceZoneContents ($id_instance_zone, $table_contenu = null)
+    {
+        $db = $this->getModel('db');
+        $id_instance_zone = (int) $id_instance_zone;
+        $sql = "
+            SELECT *
+            FROM `$this->table_cms_instance_zone_has_contenu`
+            WHERE id_instance_zone = '" . (int) $id_instance_zone . "' ";
+        if (!empty($table_contenu)) {
+            $sql.= " AND table_contenu = '" . $db->escape_string($table_contenu) . "' ";
+        }
+        $contenus = array();
+        for ($stmt = $db->query($sql); $res = $db->fetch_assoc($stmt); true) {
+            $contenus[$res['id_contenu']] = $res;
         }
         return $contenus;
     }
@@ -603,16 +631,22 @@ class cmsCmsModel extends cmsCmsModel_Parent
         return $db->fetch_assoc($stmt);
     }
 
-    public function sortInstanceZoneContents ($id_zone, $ordre)
+    public function sortInstanceZoneContents ($id_instance_zone, $ordre)
     {
-        $id_zone = (int) $id_zone;
-        $poids = 10;
+        $table_contenu_prefix = 'clementine_cms_';
         $db = $this->getModel('db');
-        foreach ($ordre as $id_contenu) {
+        $id_instance_zone = (int) $id_instance_zone;
+        // $ordre : tableau associatif ('id_contenu' => 'table_contenu')
+        $sql = "DELETE FROM `" . $this->table_cms_instance_zone_has_contenu . "` WHERE `id_instance_zone` = '" . (int) $id_instance_zone . "' AND `id_contenu` NOT IN ('" . implode("','", array_map('intval', array_keys($ordre))) . "') ";
+        $stmt = $db->query($sql);
+        $poids = 10;
+        foreach ($ordre as $id_contenu => $table_contenu) {
             $id_contenu = (int) $id_contenu;
-            $sql = "UPDATE `" . $this->table_cms_instance_zone_has_contenu . "` SET `poids` = '" . $poids . "' WHERE `id_instance_zone` = '" . $id_zone . "' AND `id_contenu` = '" . $id_contenu . "' ";
-            $stmt = $db->query($sql);
-            $poids += 10;
+            if ($id_contenu) {
+                $sql = "INSERT INTO `" . $this->table_cms_instance_zone_has_contenu . "` (`id_contenu`, `table_contenu`, `id_instance_zone`, `poids`) VALUES ('" . (int) $id_contenu . "', '" . $db->escape_string($table_contenu_prefix . $table_contenu) . "', '" . (int) $id_instance_zone . "', '" . (int) $poids . "') ON DUPLICATE KEY UPDATE `poids` = '" . (int) $poids . "' ";
+                $stmt = $db->query($sql);
+                $poids += 10;
+            }
         }
     }
 
